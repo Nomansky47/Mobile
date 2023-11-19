@@ -1,0 +1,27 @@
+fun main() {
+    readlnOrNull()
+        ?.let {
+            val answers: IntArray = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+            val poftor: IntArray = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+            it.forEachIndexed { i, c ->
+                if (c != ' ') {
+                    if (c.digitToIntOrNull() != null) {
+                        if (poftor[c.digitToInt()] != 1) {
+                            answers[c.digitToInt()]++
+                            poftor[c.digitToInt()]++
+                        }
+                    }
+                    if (i == it.length - 1) {
+                        for (x in 0..9)
+                            if (answers[x] < 1) answers[x] -= 1 else answers[x] = 0
+                    }
+                } else {
+                    for (x in 0..9) {
+                        poftor[x] = 0
+                        if (answers[x] < 1) answers[x] -= 1 else answers[x] = 0
+                    }
+                }
+            }
+            for (i in 0..9) if (answers[i] == -2) println("answer: $i")
+        }?: println("Error")
+}

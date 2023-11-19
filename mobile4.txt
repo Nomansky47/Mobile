@@ -1,0 +1,10 @@
+fun main() {
+    val pascal = listOf(
+        """b:=.5e30;""",
+        """writeln('n'a');""",
+        """readln(a[0]);"""
+    )
+
+    val why = """(\n*\s*([a-zA-Z]+\w*|([a-zA-Z]+\w*\[\d+]))\s*:=\s*(-?\d+|[-+]?\d+([eE]?-?\d+)|(\.\d+|\.\d+[eE]?-?\d+));\s*\n*)|(\n*\s*(writeln)\((\s*'+\w+'+\s*)\);\s*\n*|\n*\s*(readln)\(\s*([a-zA-Z]+\w*|([a-zA-Z]+\w*\[\d+]))\);\s*\n*)"""
+    for (part in pascal) println (Regex(why,setOf(RegexOption.MULTILINE)).matches(part.toString()))
+}

@@ -1,0 +1,85 @@
+fun main() {
+    print("Write some numbers: ")
+    val s:String?=readlnOrNull()
+    if (!s.isNullOrEmpty())
+    {
+        var answer=Int.MAX_VALUE
+        for (i in s)
+        {
+            if (i.digitToIntOrNull()!=null)
+                if (i.digitToInt()<answer&&i.digitToInt()%2==0)
+                {
+                    answer=i.digitToInt()
+                }
+        }
+        println(if (answer==Int.MAX_VALUE) {"There is no digits"} else {answer})
+    } else println("Error")
+}
+
+fun main() {	
+    //val s: String? = readlnOrNull()
+    val s: String? = "3 1 1 1 1 1 1 3 1 1 1"
+    var numbers=0
+    var err=false
+    if (!s.isNullOrEmpty())
+    {
+        val answers:IntArray = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        val poftor:IntArray= intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        for (i in s.indices)
+            if (s[i] != ' ') {
+                if (s[i].digitToIntOrNull()!=null) {
+                    if (poftor[s[i].digitToInt()] != 1) {
+                        answers[s[i].digitToInt()]++
+                        poftor[s[i].digitToInt()]++
+                    }
+                } else err=true
+               // println(i.toString()+"|"+answers[i].toString())
+                if (i==s.length-1) {
+                    for (x in 0..9)
+                        if (answers[x] < 1) answers[x] -= 1 else answers[x] = 0
+                    numbers++
+                }
+            }
+            else {
+                numbers++
+                for (x in 0..9) {
+                    poftor[x]=0
+                    if (answers[x] < 1) answers[x] -= 1 else answers[x] =0
+                }
+            }
+        // for (i in 0..9) println(i.toString()+ " "+answers[i].toString())
+            //if (numbers==3) {
+         //   if (answers[i] == -1||answers[i] == -2) println("answer: $i, numbers: $numbers")
+        if (!err) for (i in 0..9)
+         if (answers[i] == -2) println("answer: $i")
+    }
+}
+
+fun main() {
+    val s: String? = readlnOrNull()
+    var min=0
+    var prev:Int=Int.MAX_VALUE
+    var answer=-1
+    var minwordend=0
+    if (!s.isNullOrEmpty())
+    {
+        for (i in s.indices) {
+            if (s[i] != ' ') {
+                minwordend = i
+                min += 1
+                if (i==s.length-1&&prev>min&&min%2!=0)
+                {
+                    prev =min
+                    answer=minwordend
+                }
+            } else {
+                if (prev>min&&min%2!=0) {
+                    prev =min
+                    answer=minwordend
+                }
+                min = 0
+            }
+        }
+        println(if (answer==-1) "Error" else "answer= "+s[answer])
+    } else print("Error")
+}

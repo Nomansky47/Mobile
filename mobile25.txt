@@ -1,0 +1,44 @@
+fun notmain(vararg ss:Int)
+{
+    var numbers=0
+    var err=false
+    var s=""
+    for(i in ss) s+=i.toString()+" "
+    println(s)
+    if (s.isNotEmpty())
+    {
+        val answers:IntArray = intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        val poftor:IntArray= intArrayOf(0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+        for (i in s.indices)
+            if (s[i] != ' ') {
+                if (s[i].digitToIntOrNull()!=null) {
+                    if (poftor[s[i].digitToInt()] != 1) {
+                        answers[s[i].digitToInt()]++
+                        poftor[s[i].digitToInt()]++
+                    }
+                } else err=true
+                // println(i.toString()+"|"+answers[i].toString())
+                if (i==s.length-1) {
+                    for (x in 0..9)
+                        if (answers[x] < 1) answers[x] -= 1 else answers[x] = 0
+                    numbers++
+                }
+            }
+            else {
+                numbers++
+                for (x in 0..9) {
+                    poftor[x]=0
+                    if (answers[x] < 1) answers[x] -= 1 else answers[x] =0
+                }
+            }
+        // for (i in 0..9) println(i.toString()+ " "+answers[i].toString())
+        //if (numbers==3) {
+        //   if (answers[i] == -1||answers[i] == -2) println("answer: $i, numbers: $numbers")
+        if (!err) for (i in 0..9)
+            if (answers[i] == -2) println("answer: $i")
+    }
+}
+
+fun main() {
+   notmain(11,22)
+}

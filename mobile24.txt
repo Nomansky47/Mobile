@@ -1,0 +1,34 @@
+fun stringWork(s:String,one:(Int,Int)->Boolean,two:(Int)->Boolean):Int {
+    var min = 0
+    var prev: Int = if (one(Int.MAX_VALUE,0)) Int.MAX_VALUE else Int.MIN_VALUE
+    var answer = -1
+    var minwordend = 0
+    for (i in s.indices) {
+        if (s[i] != ' ') {
+            minwordend = i
+            min += 1
+            if (i == s.length - 1 && one(prev,min) && two(min)) {
+                prev = min
+                answer = minwordend
+            }
+        } else {
+            if (one(prev,min)&& two(min)) {
+                prev = min
+                answer = minwordend
+            }
+            min = 0
+
+        }
+    }
+    return answer
+}
+
+fun main() {
+    fun one(prev:Int,min:Int):Boolean=prev<min
+    fun two(min:Int):Boolean=min%2!=0
+    val s: String? = readlnOrNull()
+    if (!s.isNullOrEmpty()) {
+        val answer=stringWork(s, ::one,::two)
+        println(if (answer == -1) "Error" else "answer= " + s[answer])
+    } else println("Error")
+}

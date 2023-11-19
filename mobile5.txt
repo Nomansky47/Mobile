@@ -1,0 +1,244 @@
+interface Ishoreable{
+    var waterObject: String
+    var region: String
+    val coordinates: IntArray
+    var length:Int
+    val date:IntArray
+}
+
+interface Ifactory{
+    fun create(obj:String,reg:String,coord:IntArray, length:Int, date:IntArray):Ishoreable
+}
+
+interface Iscanner{
+    fun scan():Ishoreable
+}
+interface IShList{
+    fun get():List<Ishoreable>
+    fun add(newShore:Ishoreable)
+    fun doSort(i:Int)
+    fun change(i:Int,newShore:Ishoreable)
+    fun delete(i:Int)
+}
+
+interface IShoresPrinter{
+    fun printAllInformation(listShores: List<Ishoreable>)
+}
+
+interface ISearch{
+    fun searchInside()
+}
+
+interface IItem{
+    val id:Int
+    val name:String
+    fun doAction()
+}
+
+interface IMenuPrinter{
+    fun print(menu:Menu)
+}
+
+interface IMenu{
+    val items:MutableList<MenuItem>
+    fun doAction(id:Int)
+    fun start(mylist:List<MenuItem>)
+}
+
+
+
+class IllegalShores:Ishoreable {
+    override var waterObject: String = ""
+    override var region: String = ""
+    override val coordinates: IntArray = intArrayOf(0, 0, 0)
+    override var length: Int = 0
+    override val date: IntArray = intArrayOf(0, 0, 0)
+}
+
+class ShoresFactory:Ifactory
+{
+   override fun create(obj:String,reg:String,coord:IntArray, length:Int, date:IntArray):Ishoreable
+    {
+        val new=IllegalShores()
+        new.waterObject=obj
+        new.region=reg
+        for (i in 0..2) {
+            new.date[i] =date[i]
+            new.coordinates[i]=coord[i]
+        }
+        new.length=length
+        return new
+    }
+}
+
+class ShoresScanner:Iscanner{
+    override fun scan():Ishoreable
+    {
+        println()
+        println("Write Object Name")
+        val waterObject = readlnOrNull() ?: ""
+        println("Write Region Name")
+        val region = readlnOrNull() ?: ""
+        //
+        println("Write Coordinates")
+        val s = readln().split(" ")
+        val coordinates= intArrayOf(0,0,0)
+        coordinates[0] = s.first().toIntOrNull() ?: 0
+        coordinates[1] = s[1].toIntOrNull() ?: 0
+        coordinates[2] = s.last().toIntOrNull() ?: 0
+        println("Write Length")
+        val length = readln().toIntOrNull() ?: 0
+        //
+        println("Write Date")
+        val n = readln().split(" ")
+        val date=intArrayOf(0,0,0)
+        date[0] = n[0].toIntOrNull() ?: 0
+        date[1] = n[1].toIntOrNull() ?: 0
+        date[2] = n[2].toIntOrNull() ?: 0
+        return ShoresFactory().create(waterObject,region,coordinates,length,date)
+    }
+}
+
+class ShoresList:IShList {
+     private val BD: MutableList<Ishoreable> = mutableListOf()
+    override fun get():List<Ishoreable>
+     {
+         return BD.toList()
+     }
+    override fun doSort(i:Int)
+    {
+        when(i){
+            1->{BD.sortBy { it.waterObject }}
+            2->{BD.sortBy { it.region }}
+            3->{BD.sortBy { (it.coordinates[0]+it.coordinates[1]*10+it.coordinates[3]*100) }}
+            4->{BD.sortBy { it.length }}
+            5->{BD.sortBy { (it.date[0]+it.date[1]*10+it.date[3]*100) }}
+        }
+    }
+
+    override fun add(newShore:Ishoreable)
+    {
+        //scan снаружи
+       BD.add(newShore)
+    }
+    override fun change(i:Int,newShore:Ishoreable)
+    {
+        //scan снаружи
+        BD[i]= newShore
+    }
+    override fun delete(i:Int)
+    {
+        BD.removeAt(i)
+    }
+}
+
+class ShoresPrinter:IShoresPrinter
+{
+    private fun printAllOf(shores:Ishoreable)
+    {
+        print("| ${shores.waterObject} |")
+        print(" ${shores.region} | ")
+        for(i in shores.coordinates) print("$i ")
+        print("| ${shores.length} | ")
+        for(i in shores.date) print("$i ")
+        print("|")
+        println()
+    }
+    override fun printAllInformation(listShores: List<Ishoreable>)
+    {
+        listShores.forEachIndexed{  i, shore -> print("| $i "); printAllOf(shore) }
+    }
+}
+
+class ShoresSearch(private val thisShores: List<Ishoreable>, private val name:String):ISearch
+{
+    override fun searchInside()
+    {
+        ShoresPrinter().printAllInformation(thisShores.filter { it.waterObject.contains(name)}.toMutableList())
+    }
+
+}
+
+class MenuItem(id:Int,name:String, private val action: () -> Unit):IItem
+{
+    override val id:Int=id
+    override val name:String=name
+    override fun doAction() {
+        action.invoke()
+    }
+}
+
+class MenuPrint:IMenuPrinter {
+    override fun print(menu:Menu)
+    {
+        print("Choose the option (pick a number).")
+        menu.items.forEach{print(" ${it.id} ${it.name}.")}
+        println()
+    }
+}
+
+class Menu:IMenu
+{
+    override val items:MutableList<MenuItem> = mutableListOf()
+    override fun doAction(id:Int){
+        items.first { it.id==id  }.doAction()
+    }
+    override fun start(mylist:List<MenuItem>)
+    {
+        for (element in mylist) items.add(element)
+    }
+}
+
+fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner):List<MenuItem>
+{
+    val f1=MenuItem(1,"Print") {
+        println("| Index | WaterObject | Region | Coordinates | Length | Date |")
+        ShoresPrinter().printAllInformation(ShoresList.get())
+    }
+    val f2=MenuItem(2,"Create")
+    {
+        ShoresList.add(ShoresScanner.scan())
+        println("Created successfully")
+    }
+    val f3=MenuItem(3,"Change")
+    {
+        println("Write element index, that you want to change")
+        val i= readln().toIntOrNull()?:0
+        ShoresList.change(i,ShoresScanner.scan())
+    }
+    val f4=MenuItem(4,"Delete")
+    {
+        print("Write index:")
+        val i = readlnOrNull()?.toIntOrNull()
+        if (i != null && ShoresList.get().elementAtOrNull(i) != null)
+        {
+            ShoresList.delete(i)
+            println("Deleted successfully")
+        } else println("Error")
+    }
+    val f5=MenuItem(5,"Sort")
+    {
+        println("Write thing, that you want to sort. 1 - WaterObject. 2- Region. 3 - Coordinates. 4 - Length. 5 - Date.")
+        ShoresList.doSort(readln().toIntOrNull()?:1)
+    }
+    val f6=MenuItem(6,"Search")
+    {
+        print("Print waterObject for search:")
+        val str = readlnOrNull() ?: ""
+        ShoresSearch(ShoresList.get(), str).searchInside()
+    }
+    return listOf(f1,f2,f3,f4,f5,f6)
+}
+
+fun main() {
+    var choise=0
+    val shlist=ShoresList()
+    val menu=Menu()
+    menu.start(menuBuilder(shlist,ShoresScanner()))
+    while(true)
+    {
+        MenuPrint().print(menu)
+        choise= readln().toIntOrNull()?:1
+        menu.doAction(choise)
+    }
+}

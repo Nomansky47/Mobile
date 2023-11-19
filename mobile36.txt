@@ -1,0 +1,5 @@
+fun main() {
+    readlnOrNull()?.toIntOrNull()?.let { number -> (2..number)
+        .filter { n -> (2..<n).none { n % it == 0 } }.indexOf(number) + 1 }
+        .let { if (it!=0) println(it) else println("Error") } 
+}

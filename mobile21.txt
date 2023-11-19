@@ -1,0 +1,45 @@
+//////////////////1
+
+fun findNum(s:String):Int {
+    var answer=Int.MAX_VALUE
+    for (i in s)
+    {
+        if (i.digitToIntOrNull()!=null)
+                if (i.digitToInt()<answer&&i.digitToInt()%2==0)
+                answer=i.digitToInt()
+
+    }
+    return(answer)
+}
+
+fun main() {
+    print("Write some numbers: ")
+    val s:String?=readlnOrNull()
+    if (!s.isNullOrEmpty())
+    {
+        val n=findNum(s)
+        println(if (n==Int.MAX_VALUE) {"There is no digits"} else {n})
+    } else println("Error")
+}
+
+//////////////////2
+
+tailrec fun findSmallThing(s: String, i: Int=0, small: Int=Int.MAX_VALUE): Int {
+    if (i >= s.length) {
+        return small
+    }
+    val digit = s[i].digitToIntOrNull()
+    val next = if (digit != null && digit < small && digit % 2 == 0) {digit} else {small}
+    return findSmallThing(s, i + 1, next)
+}
+
+fun main() {
+    print("Write some numbers: ")
+    val s: String? = readlnOrNull()
+    if (!s.isNullOrEmpty()) {
+        val answer = findSmallThing(s)
+        println(if (answer == Int.MAX_VALUE) "There is no digits" else answer)
+    } else {
+        println("Error")
+    }
+}

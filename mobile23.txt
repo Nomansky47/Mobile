@@ -1,0 +1,46 @@
+/////////////
+
+fun findNum(s:String,check:(Int)->Boolean):Int {
+    var answer=Int.MAX_VALUE
+    for (i in s)
+    {
+        if (i.digitToIntOrNull()!=null)
+            if (i.digitToInt()<answer&&check(i.digitToInt()))
+                answer=i.digitToInt()
+
+    }
+    return(answer)
+}
+fun main() {
+    fun check (i:Int=0):Boolean=i%2==0
+    print("Write some numbers: ")
+    val s:String?=readlnOrNull()
+    if (!s.isNullOrEmpty())
+    {
+        val n=findNum(s, ::check)
+        println(if (n==Int.MAX_VALUE) {"There is no digits"} else {n})
+    } else println("Error")
+}
+
+/////////////////
+
+tailrec fun findSmallThing(s: String, check:(Int)->Boolean, i: Int=0, small: Int=Int.MAX_VALUE): Int {
+    if (i >= s.length) {
+        return small
+    }
+    val digit = s[i].digitToIntOrNull()
+    val next = if (digit != null && digit < small && check(digit)) {digit} else {small}
+    return findSmallThing(s,check, i + 1, next)
+}
+
+fun main() {
+    fun check (i:Int=0):Boolean=i%2==0
+    print("Write some numbers: ")
+    val s: String? = readlnOrNull()
+    if (!s.isNullOrEmpty()) {
+        val answer = findSmallThing(s,::check)
+        println(if (answer == Int.MAX_VALUE) "There is no digits" else answer)
+    } else {
+        println("Error")
+    }
+}

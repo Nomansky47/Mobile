@@ -1,0 +1,10 @@
+fun main() {
+    print("Write some numbers: ")
+    val s: String? = readlnOrNull()
+    val answer = if (!s.isNullOrEmpty()) {
+        s.filter { it.isDigit() && it.digitToInt() % 2 == 0 }
+            .map { it.digitToInt() }
+            .minOrNull()?:Int.MAX_VALUE
+    } else Int.MAX_VALUE
+    println(if (answer==Int.MAX_VALUE) "Error" else answer)
+}

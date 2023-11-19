@@ -1,0 +1,14 @@
+fun concatFunc(vararg funcs: () -> String): () -> String {
+    return {
+        var res = ""
+        for (func in funcs) {
+            res += func()
+        }
+        res
+    }
+}
+
+fun main() {
+    val result = concatFunc({"this"},{" works"},{ " perfectly"})
+    println(result()) //
+}

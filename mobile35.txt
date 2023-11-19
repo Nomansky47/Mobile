@@ -1,0 +1,35 @@
+fun main() {
+    generateSequence {
+        data class Student(val firstName: String, val lastName: String, val grades: List<Int>)
+        print("Write lastName: ")
+        val lastName = readlnOrNull()?.takeIf { it.isNotBlank() }
+        if (lastName==null)
+        {
+            println("lastName Error")
+            return@generateSequence null
+        }
+        print("Write firstName: ")
+        val firstName = readlnOrNull()?.takeIf { it.isNotBlank() }
+        if (firstName==null)
+        {
+            println("firstName Error")
+            return@generateSequence null
+        }
+        print("Write grades: ")
+        val grades = readlnOrNull()
+            ?.takeIf { it.isNotBlank() }
+            ?.split(" ")
+            ?.map { it.toIntOrNull() ?: 0 }
+        if (grades?.contains(0)==true)
+        {
+            println("Grades Error")
+            return@generateSequence null
+        }
+        Student(firstName, lastName, if (!grades.isNullOrEmpty()) grades else listOf(0))
+    }.toList()
+        .sortedWith(compareBy({ it.grades.minOrNull() }, { it.lastName }, { it.firstName }))
+        .takeWhile { it.grades.isNotEmpty() }
+        .forEach {
+                println("${it.lastName} ${it.firstName}: ${it.grades.minOrNull()}")
+        }
+}
