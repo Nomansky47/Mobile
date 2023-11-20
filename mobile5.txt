@@ -16,7 +16,7 @@ interface Iscanner{
 interface IShList{
     fun get():List<Ishoreable>
     fun add(newShore:Ishoreable)
-    fun doSort(i:Int)
+    fun <R:Comparable<R>> doSort(obj:(Ishoreable)->R?)
     fun change(i:Int,newShore:Ishoreable)
     fun delete(i:Int)
 }
@@ -26,7 +26,7 @@ interface IShoresPrinter{
 }
 
 interface ISearch{
-    fun searchInside()
+    fun searchInside(thisShores: List<Ishoreable>,  name:String):List<Ishoreable>
 }
 
 interface IItem{
@@ -36,16 +36,14 @@ interface IItem{
 }
 
 interface IMenuPrinter{
-    fun print(menu:Menu)
+    fun print(menu:IMenu)
 }
 
 interface IMenu{
-    val items:MutableList<MenuItem>
+    val items:MutableList<IItem>
     fun doAction(id:Int)
-    fun start(mylist:List<MenuItem>)
+    fun start(mylist:List<IItem>)
 }
-
-
 
 class IllegalShores:Ishoreable {
     override var waterObject: String = ""
@@ -105,25 +103,17 @@ class ShoresList:IShList {
      {
          return BD.toList()
      }
-    override fun doSort(i:Int)
+    override fun<R:Comparable<R>> doSort(obj:(Ishoreable)->R? )
     {
-        when(i){
-            1->{BD.sortBy { it.waterObject }}
-            2->{BD.sortBy { it.region }}
-            3->{BD.sortBy { (it.coordinates[0]+it.coordinates[1]*10+it.coordinates[3]*100) }}
-            4->{BD.sortBy { it.length }}
-            5->{BD.sortBy { (it.date[0]+it.date[1]*10+it.date[3]*100) }}
-        }
+            BD.sortBy(obj)
     }
 
     override fun add(newShore:Ishoreable)
     {
-        //scan снаружи
        BD.add(newShore)
     }
     override fun change(i:Int,newShore:Ishoreable)
     {
-        //scan снаружи
         BD[i]= newShore
     }
     override fun delete(i:Int)
@@ -150,11 +140,11 @@ class ShoresPrinter:IShoresPrinter
     }
 }
 
-class ShoresSearch(private val thisShores: List<Ishoreable>, private val name:String):ISearch
+class ShoresSearch:ISearch
 {
-    override fun searchInside()
+    override fun searchInside(  thisShores: List<Ishoreable>,  name:String):List<Ishoreable>
     {
-        ShoresPrinter().printAllInformation(thisShores.filter { it.waterObject.contains(name)}.toMutableList())
+       return thisShores.filter { it.waterObject.contains(name)}
     }
 
 }
@@ -169,7 +159,7 @@ class MenuItem(id:Int,name:String, private val action: () -> Unit):IItem
 }
 
 class MenuPrint:IMenuPrinter {
-    override fun print(menu:Menu)
+    override fun print(menu: IMenu)
     {
         print("Choose the option (pick a number).")
         menu.items.forEach{print(" ${it.id} ${it.name}.")}
@@ -179,21 +169,21 @@ class MenuPrint:IMenuPrinter {
 
 class Menu:IMenu
 {
-    override val items:MutableList<MenuItem> = mutableListOf()
+    override val items:MutableList<IItem> = mutableListOf()
     override fun doAction(id:Int){
         items.first { it.id==id  }.doAction()
     }
-    override fun start(mylist:List<MenuItem>)
+    override fun start(mylist:List<IItem>)
     {
         for (element in mylist) items.add(element)
     }
 }
 
-fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner):List<MenuItem>
+fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner,ShoresPrinter:IShoresPrinter):List<IItem>
 {
     val f1=MenuItem(1,"Print") {
         println("| Index | WaterObject | Region | Coordinates | Length | Date |")
-        ShoresPrinter().printAllInformation(ShoresList.get())
+        ShoresPrinter.printAllInformation(ShoresList.get())
     }
     val f2=MenuItem(2,"Create")
     {
@@ -219,13 +209,22 @@ fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner):List<MenuItem>
     val f5=MenuItem(5,"Sort")
     {
         println("Write thing, that you want to sort. 1 - WaterObject. 2- Region. 3 - Coordinates. 4 - Length. 5 - Date.")
-        ShoresList.doSort(readln().toIntOrNull()?:1)
+        //obj:(IllegalShores)->R
+        val s= readlnOrNull()?:1
+        when (s)
+        {
+            1->ShoresList.doSort { it.waterObject }
+            2->ShoresList.doSort{ it.region }
+            3->ShoresList.doSort { it.coordinates[0]+it.coordinates[1]*10+it.coordinates[3]*100 }
+            4->ShoresList.doSort{it.length}
+            5->ShoresList.doSort{it.date[0]+it.date[1]*10+it.date[3]*100}
+        }
     }
     val f6=MenuItem(6,"Search")
     {
         print("Print waterObject for search:")
         val str = readlnOrNull() ?: ""
-        ShoresSearch(ShoresList.get(), str).searchInside()
+        ShoresPrinter.printAllInformation(ShoresSearch().searchInside(ShoresList.get(), str))
     }
     return listOf(f1,f2,f3,f4,f5,f6)
 }
@@ -234,7 +233,7 @@ fun main() {
     var choise=0
     val shlist=ShoresList()
     val menu=Menu()
-    menu.start(menuBuilder(shlist,ShoresScanner()))
+    menu.start(menuBuilder(shlist,ShoresScanner(), ShoresPrinter()))
     while(true)
     {
         MenuPrint().print(menu)
