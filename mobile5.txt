@@ -11,7 +11,7 @@ interface Ifactory{
 }
 
 interface Iscanner{
-    fun scan():Ishoreable
+    fun scan(ErrorHandler:ErrorHandler):Ishoreable?
 }
 interface IShList{
     fun get():List<Ishoreable>
@@ -45,6 +45,16 @@ interface IMenu{
     fun start(mylist:List<IItem>)
 }
 
+interface IErrorHandler{
+    val items:MutableList<IErrorItem>
+    fun checkErr(id:Int,str: String?):Boolean
+    fun start(mylist:List<IErrorItem>)
+}
+
+interface IErrorItem{
+    fun doCheck(str: String?):Boolean
+}
+
 class IllegalShores:Ishoreable {
     override var waterObject: String = ""
     override var region: String = ""
@@ -69,31 +79,61 @@ class ShoresFactory:Ifactory
     }
 }
 
-class ShoresScanner:Iscanner{
-    override fun scan():Ishoreable
+class ErrorItem(id:Int, private val action: (String?) -> Boolean):IErrorItem
+{
+    override val id:Int=id
+    override fun doCheck(str: String?):Boolean {
+        return action.invoke(str)
+    }
+}
+
+class ErrorHandler:IErrorHandler
+{
+    override val items:MutableList<IErrorItem> = mutableListOf()
+    override fun checkErr(id:Int,str: String?):Boolean{
+        return items.first { it.id==id  }.doCheck(str)
+    }
+    override fun start(mylist:List<IErrorItem>)
     {
+        for (element in mylist) items.add(element)
+    }
+}
+
+class ShoresScanner:Iscanner{
+    override fun scan(ErrorHandler:ErrorHandler):Ishoreable?
+    {
+        var err=false
         println()
         println("Write Object Name")
-        val waterObject = readlnOrNull() ?: ""
+        val waterObject = readlnOrNull()
+        err=ErrorHandler.checkErr(1,waterObject)
         println("Write Region Name")
-        val region = readlnOrNull() ?: ""
-        //
+        val region = readlnOrNull()
+        err=ErrorHandler.checkErr(1,region)
         println("Write Coordinates")
-        val s = readln().split(" ")
-        val coordinates= intArrayOf(0,0,0)
-        coordinates[0] = s.first().toIntOrNull() ?: 0
-        coordinates[1] = s[1].toIntOrNull() ?: 0
-        coordinates[2] = s.last().toIntOrNull() ?: 0
+        val ss = readlnOrNull()
+        val coordinates = intArrayOf(0, 0, 0)
+        if (!ss.isNullOrEmpty()) {
+            val s = ss.split(" ")
+            coordinates[0] = s.first().toIntOrNull() ?: 0
+            coordinates[1] = s[1].toIntOrNull() ?: 0
+            coordinates[2] = s.last().toIntOrNull() ?: 0
+        } else err=ErrorHandler.checkErr(2,ss)
         println("Write Length")
-        val length = readln().toIntOrNull() ?: 0
-        //
+        val length = readlnOrNull()?.toIntOrNull()
+        if (length==null) err=true
         println("Write Date")
-        val n = readln().split(" ")
-        val date=intArrayOf(0,0,0)
-        date[0] = n[0].toIntOrNull() ?: 0
-        date[1] = n[1].toIntOrNull() ?: 0
-        date[2] = n[2].toIntOrNull() ?: 0
-        return ShoresFactory().create(waterObject,region,coordinates,length,date)
+        val nn = readlnOrNull()
+        val date = intArrayOf(0, 0, 0)
+        if (!nn.isNullOrEmpty()) {
+            val n=nn.split(" ")
+            date[0] = n[0].toIntOrNull() ?: 0
+            date[1] = n[1].toIntOrNull() ?: 0
+            date[2] = n[2].toIntOrNull() ?: 0
+        } else err=true
+        if (err) return null
+        else
+        return ShoresFactory().create(waterObject!!,region!!,coordinates,length!!,date)
     }
 }
 
@@ -179,7 +219,7 @@ class Menu:IMenu
     }
 }
 
-fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner,ShoresPrinter:IShoresPrinter):List<IItem>
+fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner,ShoresPrinter:IShoresPrinter,ErrorHandler: ErrorHandler):List<IItem>
 {
     val f1=MenuItem(1,"Print") {
         println("| Index | WaterObject | Region | Coordinates | Length | Date |")
@@ -187,14 +227,21 @@ fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner,ShoresPrinter:IShoresP
     }
     val f2=MenuItem(2,"Create")
     {
-        ShoresList.add(ShoresScanner.scan())
-        println("Created successfully")
+        val obj=ShoresScanner.scan(ErrorHandler)
+        if (obj!=null) {
+            ShoresList.add(obj)
+            println("Created successfully")
+        } else println("Error")
     }
     val f3=MenuItem(3,"Change")
     {
         println("Write element index, that you want to change")
-        val i= readln().toIntOrNull()?:0
-        ShoresList.change(i,ShoresScanner.scan())
+        val i= readlnOrNull()?.toIntOrNull()
+        val obj=ShoresScanner.scan(ErrorHandler)
+        if (i != null && ShoresList.get().elementAtOrNull(i) != null&&obj!=null) {
+            ShoresList.change(i,obj )
+        }
+        else println("Error")
     }
     val f4=MenuItem(4,"Delete")
     {
@@ -210,7 +257,7 @@ fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner,ShoresPrinter:IShoresP
     {
         println("Write thing, that you want to sort. 1 - WaterObject. 2- Region. 3 - Coordinates. 4 - Length. 5 - Date.")
         //obj:(IllegalShores)->R
-        val s= readlnOrNull()?:1
+        val s= readlnOrNull()?.toIntOrNull()?:1
         when (s)
         {
             1->ShoresList.doSort { it.waterObject }
@@ -219,6 +266,7 @@ fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner,ShoresPrinter:IShoresP
             4->ShoresList.doSort{it.length}
             5->ShoresList.doSort{it.date[0]+it.date[1]*10+it.date[3]*100}
         }
+        if (s !in 1..5) println("Error")
     }
     val f6=MenuItem(6,"Search")
     {
@@ -229,10 +277,16 @@ fun menuBuilder(ShoresList:IShList,ShoresScanner:Iscanner,ShoresPrinter:IShoresP
     return listOf(f1,f2,f3,f4,f5,f6)
 }
 
+fun errBuilder():List<IErrorItem>
+{
+
+}
+
 fun main() {
     var choise=0
     val shlist=ShoresList()
     val menu=Menu()
+    val ErrorHandler=ErrorHandler().start()
     menu.start(menuBuilder(shlist,ShoresScanner(), ShoresPrinter()))
     while(true)
     {
