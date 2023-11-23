@@ -1,0 +1,53 @@
+fun <T> forfun(vararg functions: (T) -> String): (T) -> String {
+    return { res: T ->
+        functions.joinToString (separator=""){ function -> function(res) }
+    }
+}
+fun main() {
+    fun cat(str: Int): String {
+        return "mew-$str"
+    }
+    fun cat2 (str:Int):String{
+        return "mow-$str"
+    }
+   // val s = "cat"
+    val combo = forfun<Int>(::cat,::cat2)
+    println(combo(0))
+}
+
+///
+class Rofls<T>{
+    private val roflList= mutableListOf<T>()
+    fun insert(el: T, n: Int): Boolean
+    {
+        if (n>=0)
+        roflList.add(n,el)
+        else return false
+        return true
+    }
+    fun print()
+    {
+        val element=roflList.first()
+        println( if(element!=null) element else "Error")
+    }
+
+    fun delete(): Boolean
+    {
+       return if  (roflList.removeLast()!=null) true else false
+    }
+    fun eraseAll():Boolean
+    {
+       return roflList.removeAll(roflList)
+    }
+}
+
+fun main()
+{
+    var rofls=Rofls<String>()
+    rofls.insert("rofl",0)
+    rofls.insert("123",1)
+    rofls.insert("345",2)
+    rofls.print()
+    rofls.delete()
+    rofls.eraseAll()
+}

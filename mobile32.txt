@@ -6,3 +6,24 @@ fun main()
     }
     }///it===s.map{}
     }
+
+
+fun main() {
+    readlnOrNull().let { it ->
+        if (!it.isNullOrEmpty()) {
+            it.split(" ")
+                .let { list ->
+                    if (list.any { it.toIntOrNull() != null }) {
+                        list.sortedByDescending { it }.forEachIndexed { i, str ->
+                            if (i < list.lastIndex) {
+                                list[i+1].forEach {
+                                    if (list.filter{ it!=str})
+                                        println(it)
+                                }
+                            } else println("last $str")
+                        }
+                    } else println("Error")
+                }
+        } else println("Error")
+    }
+}
