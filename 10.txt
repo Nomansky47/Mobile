@@ -1,0 +1,153 @@
+package com.example.jetapplication
+
+import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+
+class Mathfunc {
+    fun doMath(i: Int) : String {
+        var stranswer = ""
+        var intanswer=i
+            var i = 2
+            stranswer = "$intanswer ="
+            do {
+                if (intanswer % i == 0) {
+                    stranswer += " $i *"
+                    intanswer /= i
+                } else {
+                    i++
+                }
+            } while (intanswer != 1)
+            return "$stranswer 1"
+        return stranswer
+    }
+}
+class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val answer = rememberSaveable{mutableStateOf("")}
+            val math=rememberSaveable{mutableStateOf("")}
+            Column(modifier=Modifier.fillMaxSize()) {
+                Button(modifier = Modifier.testTag("button"),onClick = {
+                    var intanswer=math.value.toIntOrNull()
+                    if (intanswer!=null&&intanswer>0) {
+                        answer.value = Mathfunc().doMath(intanswer)
+                    }
+                }) {
+                    Text(getString(R.string.printtxt))
+                }
+                Text(text=getString(R.string.write_some_numbers))
+                TextField(math.value,onValueChange = {math.value= it },modifier = Modifier.testTag("textfield"))
+                Text(answer.value,modifier = Modifier.testTag("answer"))
+            }
+        }
+    }
+}
+
+
+///UI
+package com.example.jetapplication
+
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.ext.junit.runners.AndroidJUnit4
+
+import org.junit.Test
+import org.junit.runner.RunWith
+
+import org.junit.Assert.*
+import org.junit.Rule
+
+
+@RunWith(AndroidJUnit4::class)
+class ExampleInstrumentedTest {
+    @get:Rule
+    val  composeTestRule= createAndroidComposeRule<MainActivity>()
+    @Test
+    fun normFun() {
+        composeTestRule.onNodeWithTag("textfield").performTextInput("2")
+       composeTestRule.onNodeWithTag("button").performClick()
+        composeTestRule.onNodeWithTag("answer").assertTextEquals("2 = 2 * 1")
+    }
+    @Test
+    fun normFun2() {
+        composeTestRule.onNodeWithTag("textfield").performTextInput("4")
+        composeTestRule.onNodeWithTag("button").performClick()
+        composeTestRule.onNodeWithTag("answer").assertTextEquals("2 = 2 * 2 * 1")
+    }
+    @Test
+    fun zeroFun() {
+        composeTestRule.onNodeWithTag("textfield").performTextInput("0")
+        composeTestRule.onNodeWithTag("button").performClick()
+        composeTestRule.onNodeWithTag("answer").assertTextEquals("")
+    }
+    @Test
+    fun minusFun() {
+        composeTestRule.onNodeWithTag("textfield").performTextInput("-9")
+        composeTestRule.onNodeWithTag("button").performClick()
+        composeTestRule.onNodeWithTag("answer").assertTextEquals("")
+    }
+    @Test
+    fun wordFun() {
+        composeTestRule.onNodeWithTag("textfield").performTextInput("sss")
+        composeTestRule.onNodeWithTag("button").performClick()
+        composeTestRule.onNodeWithTag("answer").assertTextEquals("")
+    }
+    @Test
+    fun tooMuchFun() {
+        composeTestRule.onNodeWithTag("textfield").performTextInput("99999999999999999999999999999999")
+        composeTestRule.onNodeWithTag("button").performClick()
+        composeTestRule.onNodeWithTag("answer").assertTextEquals("")
+    }
+
+}
+
+//TESTS
+
+package com.example.jetapplication
+
+import org.junit.Test
+
+import org.junit.Assert.*
+
+
+class ExampleUnitTest {
+    @Test
+    fun addition_isCorrect() {
+        assertEquals(Mathfunc().doMath(2), "2 = 2 * 1")
+    }
+}

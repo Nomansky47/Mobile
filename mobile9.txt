@@ -1,0 +1,56 @@
+package com.example.jetapplication
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.jetapplication.ui.theme.JetApplicationTheme
+
+class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            val answer = rememberSaveable{mutableStateOf("")}
+            val math=rememberSaveable{mutableStateOf("")}
+            Column(modifier=Modifier.fillMaxSize()) {
+                Button(onClick = {
+                var intanswer=math.value.toIntOrNull()
+                    var stranswer=""
+                    if (intanswer!=null&&intanswer!=0) {
+                        var i = 2
+                        stranswer="$intanswer ="
+                        do {
+                            if (intanswer % i == 0) {
+                                stranswer+=" $i *"
+                                intanswer /= i
+                            } else {
+                                i++
+                            }
+                        } while (intanswer != 1)
+                        answer.value= "$stranswer 1"
+                  
+                    }
+                }) {
+                    Text(getString(R.string.printtxt))
+                }
+                Text(getString(R.string.write_some_numbers))
+                TextField(math.value,onValueChange = {math.value= it })
+                Text(answer.value)
+            }
+            }
+            }
+        }
